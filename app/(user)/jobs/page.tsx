@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation'; 
 import { supabase } from '@/lib/supabase/clientComponents';
+export const dynamic = 'force-dynamic';
 
 interface Job {
   id: string;
