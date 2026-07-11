@@ -1,47 +1,36 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase/clientComponents';
 import Sidebar from '@/components/SideBar';
-import AdminLogin from './login/page'; 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [session, setSession] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdminRole = async (currentSession: any) => {
-      if (!currentSession) {
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-
-      const role = currentSession.user?.user_metadata?.role;
-
-      if (role === 'admin') {
-        setIsAdmin(true);
-      } else {
-        await supabase.auth.signOut();
-        setIsAdmin(false);
-        alert("Sizda admin huquqlari yo'q!");
-      }
-      setLoading(false);
-    };
-
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
-      checkAdminRole(currentSession);
+      
+      if (!currentSession && pathname !== '/admin/login') {
+        router.push('/admin/login');
+      }
+      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       setSession(currentSession);
-      checkAdminRole(currentSession);
+      if (!currentSession && pathname !== '/admin/login') {
+        router.push('/admin/login');
+      }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [pathname, router]);
 
   if (loading) {
     return (
@@ -56,17 +45,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Sidebar /> 
 
       <div className="flex-1 p-8 overflow-y-auto flex items-center justify-center">
-        
-        {!session || !isAdmin ? (
-          <div className="w-full flex justify-center items-center">
-            <AdminLogin /> 
-          </div>
-        ) : (
-          <div className="w-full h-full">
-            {children}
-          </div>
-        )}
-
+        <div className="w-full h-full flex items-center justify-center">
+          {children}
+        </div>
       </div>
     </div>
   );

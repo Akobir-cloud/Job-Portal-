@@ -1,15 +1,11 @@
-
-
-
-
-
-
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/clientComponents'; 
 
 export default function AdminLogin() {
+  const router = useRouter();
   const [email, setEmail] = useState('admin@jobportal.com');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,7 +24,14 @@ export default function AdminLogin() {
 
       if (error) throw error;
 
-   
+      if (data.user?.email === 'admin@jobportal.com') {
+        router.push('/admin/jobs'); 
+        router.refresh();
+      } else {
+        await supabase.auth.signOut();
+        setErrorMsg("Sizda admin huquqlari yo'q!");
+      }
+
     } catch (error: any) {
       setErrorMsg(error.message || 'Email yoki parol xato!');
     } finally {
@@ -39,9 +42,7 @@ export default function AdminLogin() {
   return (
     <div className="w-full flex flex-col items-center justify-center p-4">
       <div className="flex items-center gap-2 mb-4">
-        <div className="bg-[#0f3470] text-white font-bold p-2 rounded text-sm tracking-wider">
-          JP
-        </div>
+        <div className="bg-[#0f3470] text-white font-bold p-2 rounded text-sm tracking-wider">JP</div>
         <span className="text-2xl font-bold text-[#1f2937]">JobPortal</span>
       </div>
 
@@ -49,7 +50,6 @@ export default function AdminLogin() {
       <p className="text-gray-500 mb-8 text-center">Sign in to manage job postings</p>
 
       <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
-        
         {errorMsg && (
           <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">
             {errorMsg}
@@ -58,30 +58,24 @@ export default function AdminLogin() {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0f3470] text-gray-800 text-sm"
-              placeholder="Enter your email"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0f3470] text-gray-800 text-sm"
-              placeholder="Enter your password"
             />
           </div>
 
